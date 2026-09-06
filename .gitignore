@@ -7,6 +7,10 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+_env/
+
+# Claude Code local project state
+.claude/
 
 # Generated schema-extraction artifacts (regenerate via 02_build_schema_index.py — pure DB
 # introspection, safe to regenerate). schema_for_review.json is NOT ignored — it holds the
