@@ -1,0 +1,110 @@
+{
+  "public.agency": {
+    "draft_description": "An insurance agency branch/office that employs agents; agents under an agency write policies.",
+    "columns": ["agency_id", "name", "region", "created_at"],
+    "domain_cluster": "agent",
+    "needs_review": false
+  },
+  "public.agent": {
+    "draft_description": "An insurance agent who writes (sells) policies on behalf of an agency. is_active=false means no longer employed.",
+    "columns": ["agent_id", "agency_id", "first_name", "last_name", "email", "hire_date", "is_active"],
+    "domain_cluster": "agent",
+    "needs_review": false
+  },
+  "public.beneficiary": {
+    "draft_description": "Person who receives payout under a policy (mainly Life policies). allocation_pct is the share of payout, should sum to 100 across a policy's beneficiaries.",
+    "columns": ["beneficiary_id", "policy_id", "full_name", "relationship", "allocation_pct"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.claim": {
+    "draft_description": "A claim filed by a policyholder against their policy after an incident. status moves open -> under_review -> approved/denied -> closed. paid_amount is null until a payout is made.",
+    "columns": ["claim_id", "policy_id", "claim_number", "filed_date", "incident_date", "description", "status", "claim_amount", "paid_amount"],
+    "domain_cluster": "claims",
+    "needs_review": false
+  },
+  "public.claim_status_history": {
+    "draft_description": "Audit trail of every status change a claim went through, with who changed it and when.",
+    "columns": ["claim_status_history_id", "claim_id", "status", "changed_at", "changed_by", "notes"],
+    "domain_cluster": "claims",
+    "needs_review": false
+  },
+  "public.communication_log": {
+    "draft_description": "Record of outbound communication (email/sms/phone/mail) sent to a customer, optionally about a specific policy.",
+    "columns": ["communication_log_id", "customer_id", "policy_id", "channel", "subject", "sent_at"],
+    "domain_cluster": "customer",
+    "needs_review": false
+  },
+  "public.coverage": {
+    "draft_description": "A named type of protection (e.g. Collision, Liability, Fire, Theft, Flood) that can be attached to a policy via policy_coverage.",
+    "columns": ["coverage_id", "name", "description"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.customer": {
+    "draft_description": "A person who holds one or more insurance policies. The root entity for the customer domain.",
+    "columns": ["customer_id", "first_name", "last_name", "email", "phone", "date_of_birth", "address_line1", "city", "state", "postal_code", "created_at"],
+    "domain_cluster": "customer",
+    "needs_review": false
+  },
+  "public.document": {
+    "draft_description": "A file attached to either a policy or a claim (exactly one of policy_id/claim_id is set, never both) — e.g. policy PDFs, claim photos, police reports.",
+    "columns": ["document_id", "policy_id", "claim_id", "document_type", "file_name", "uploaded_at"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.payment_method": {
+    "draft_description": "A stored payment method (credit card, ACH, check) a customer uses to pay policy premiums. is_default marks the one used unless overridden.",
+    "columns": ["payment_method_id", "customer_id", "method_type", "last_four", "is_default"],
+    "domain_cluster": "finance",
+    "needs_review": false
+  },
+  "public.policy": {
+    "draft_description": "An insurance policy contract, the central entity of the schema. status is one of active/lapsed/cancelled/expired — 'lapsed' specifically means the premium went unpaid past the grace period (see premium_payment.status='missed'); 'cancelled' means the customer or company terminated it early; 'expired' means the term ended and it was not renewed. annual_premium is the yearly written premium amount.",
+    "columns": ["policy_id", "policy_number", "policy_holder_id", "agent_id", "policy_type_id", "status", "effective_date", "expiration_date", "annual_premium", "created_at"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.policy_coverage": {
+    "draft_description": "Join table linking a policy to the coverages attached to it, with the coverage_limit and deductible negotiated for that policy.",
+    "columns": ["policy_coverage_id", "policy_id", "coverage_id", "coverage_limit", "deductible"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.policy_holder": {
+    "draft_description": "Links a customer to the role of holding a policy (a customer becomes a policy_holder in order to be issued a policy); supports co-holders via relationship_to_customer/is_primary, though this synthetic dataset only has primary holders.",
+    "columns": ["policy_holder_id", "customer_id", "is_primary", "relationship_to_customer"],
+    "domain_cluster": "customer",
+    "needs_review": false
+  },
+  "public.policy_type": {
+    "draft_description": "Category of insurance product: Auto, Home, Life, or Umbrella. Determines which related asset table (vehicle/property) and coverages typically apply.",
+    "columns": ["policy_type_id", "name", "description"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.premium_payment": {
+    "draft_description": "A scheduled premium payment (the 'written premium' installment) for a policy. status is pending/paid/late/missed. Two or more consecutive 'missed' payments on a policy is what drives it to policy.status='lapsed' in this dataset.",
+    "columns": ["premium_payment_id", "policy_id", "payment_method_id", "amount", "due_date", "paid_date", "status"],
+    "domain_cluster": "finance",
+    "needs_review": false
+  },
+  "public.property": {
+    "draft_description": "The real-estate property insured under a Home policy (one row per Home policy). replacement_value is the insured value used for coverage limits.",
+    "columns": ["property_id", "policy_id", "address_line1", "city", "state", "postal_code", "property_type", "year_built", "replacement_value"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.underwriting_decision": {
+    "draft_description": "The risk-assessment outcome recorded when a policy was issued (decision: approved/denied/referred, plus a numeric risk_score — higher means riskier).",
+    "columns": ["underwriting_decision_id", "policy_id", "decision", "risk_score", "decided_by", "decided_at", "notes"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  },
+  "public.vehicle": {
+    "draft_description": "The vehicle insured under an Auto policy (one row per Auto policy).",
+    "columns": ["vehicle_id", "policy_id", "vin", "make", "model", "model_year"],
+    "domain_cluster": "policy",
+    "needs_review": false
+  }
+}

@@ -1,0 +1,28 @@
+# Secrets
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Generated schema-extraction artifacts (regenerate via 02_build_schema_index.py — pure DB
+# introspection, safe to regenerate). schema_for_review.json is NOT ignored — it holds the
+# hand-authored table descriptions/domain_cluster tags from the human review pass (M3).
+backend/scripts/schema_extraction/schema_metadata.json
+backend/scripts/schema_extraction/fk_graph.json
+backend/run_logs/
+backend/eval_runs/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Postgres data volume (managed by docker-compose)
+docker/postgres/data/
+
+# Editor/OS
+.DS_Store

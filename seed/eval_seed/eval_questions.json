@@ -1,0 +1,182 @@
+[
+  {
+    "id": "eval-001",
+    "question": "List all active bookings with their booking date and agreement value.",
+    "gold_sql": "SELECT booking_id, booking_date, agreement_value FROM public.booking WHERE status = 'active';",
+    "gold_tables": ["public.booking"],
+    "domain_cluster": "booking",
+    "difficulty": "simple",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-002",
+    "question": "Show all customers who live in Mumbai.",
+    "gold_sql": "SELECT cu.first_name, cu.last_name, cu.email FROM public.customer cu JOIN public.city ci ON cu.city_id = ci.city_id WHERE ci.name = 'Mumbai';",
+    "gold_tables": ["public.customer", "public.city"],
+    "domain_cluster": "org",
+    "difficulty": "simple",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-003",
+    "question": "List all milestones with status overdue.",
+    "gold_sql": "SELECT milestone_id, milestone_name, due_amount FROM public.milestone WHERE status = 'overdue';",
+    "gold_tables": ["public.milestone"],
+    "domain_cluster": "payment",
+    "difficulty": "simple",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-004",
+    "question": "Show all units that are currently available for sale.",
+    "gold_sql": "SELECT unit_number, base_price FROM public.unit WHERE status = 'available';",
+    "gold_tables": ["public.unit"],
+    "domain_cluster": "masters",
+    "difficulty": "simple",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-005",
+    "question": "List all payment plan templates and their type.",
+    "gold_sql": "SELECT name, plan_type FROM public.payment_plan_template;",
+    "gold_tables": ["public.payment_plan_template"],
+    "domain_cluster": "payment",
+    "difficulty": "simple",
+    "question_type": "lookup"
+  },
+  {
+    "id": "eval-006",
+    "question": "Show all bookings with an agreement value greater than 20,000,000.",
+    "gold_sql": "SELECT booking_id, agreement_value FROM public.booking WHERE agreement_value > 20000000;",
+    "gold_tables": ["public.booking"],
+    "domain_cluster": "booking",
+    "difficulty": "simple",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-007",
+    "question": "List all amenities and their category.",
+    "gold_sql": "SELECT name, category FROM public.amenity;",
+    "gold_tables": ["public.amenity"],
+    "domain_cluster": "masters",
+    "difficulty": "simple",
+    "question_type": "lookup"
+  },
+  {
+    "id": "eval-008",
+    "question": "Show all bookings made in 2024.",
+    "gold_sql": "SELECT booking_id, booking_date FROM public.booking WHERE booking_date >= '2024-01-01' AND booking_date < '2025-01-01';",
+    "gold_tables": ["public.booking"],
+    "domain_cluster": "booking",
+    "difficulty": "simple",
+    "question_type": "temporal"
+  },
+  {
+    "id": "eval-009",
+    "question": "How many milestones does each booking have?",
+    "gold_sql": "SELECT b.booking_id, COUNT(m.milestone_id) AS milestone_count FROM public.booking b JOIN public.payment_plan pp ON pp.booking_id = b.booking_id JOIN public.milestone m ON m.payment_plan_id = pp.payment_plan_id GROUP BY b.booking_id ORDER BY b.booking_id;",
+    "gold_tables": ["public.booking", "public.payment_plan", "public.milestone"],
+    "domain_cluster": "payment",
+    "difficulty": "moderate",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-010",
+    "question": "What is the total amount collected per booking?",
+    "gold_sql": "SELECT b.booking_id, SUM(r.amount) AS total_collected FROM public.booking b JOIN public.receipt r ON r.booking_id = b.booking_id GROUP BY b.booking_id ORDER BY b.booking_id;",
+    "gold_tables": ["public.booking", "public.receipt"],
+    "domain_cluster": "collection",
+    "difficulty": "moderate",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-011",
+    "question": "What is the average agreement value by project?",
+    "gold_sql": "SELECT pr.name, AVG(b.agreement_value) AS avg_agreement_value FROM public.booking b JOIN public.unit u ON b.unit_id = u.unit_id JOIN public.project pr ON u.project_id = pr.project_id GROUP BY pr.name ORDER BY pr.name;",
+    "gold_tables": ["public.booking", "public.unit", "public.project"],
+    "domain_cluster": "booking",
+    "difficulty": "moderate",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-012",
+    "question": "How many bookings has each sales employee closed?",
+    "gold_sql": "SELECT e.first_name, e.last_name, COUNT(b.booking_id) AS booking_count FROM public.employee e JOIN public.booking b ON b.booked_by = e.employee_id GROUP BY e.employee_id, e.first_name, e.last_name ORDER BY booking_count DESC;",
+    "gold_tables": ["public.employee", "public.booking"],
+    "domain_cluster": "org",
+    "difficulty": "moderate",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-013",
+    "question": "List all bookings along with the unit number and project name.",
+    "gold_sql": "SELECT b.booking_id, u.unit_number, pr.name AS project_name FROM public.booking b JOIN public.unit u ON b.unit_id = u.unit_id JOIN public.project pr ON u.project_id = pr.project_id ORDER BY b.booking_id;",
+    "gold_tables": ["public.booking", "public.unit", "public.project"],
+    "domain_cluster": "booking",
+    "difficulty": "moderate",
+    "question_type": "multi-hop-join"
+  },
+  {
+    "id": "eval-014",
+    "question": "How many units does each project have, broken down by status?",
+    "gold_sql": "SELECT pr.name AS project_name, u.status, COUNT(*) AS unit_count FROM public.unit u JOIN public.project pr ON u.project_id = pr.project_id GROUP BY pr.name, u.status ORDER BY pr.name, u.status;",
+    "gold_tables": ["public.unit", "public.project"],
+    "domain_cluster": "masters",
+    "difficulty": "moderate",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-015",
+    "question": "List all demand letters along with the customer name and unit number.",
+    "gold_sql": "SELECT dl.demand_number, cu.first_name, cu.last_name, u.unit_number FROM public.demand_letter dl JOIN public.booking b ON dl.booking_id = b.booking_id JOIN public.customer cu ON b.customer_id = cu.customer_id JOIN public.unit u ON b.unit_id = u.unit_id ORDER BY dl.demand_number;",
+    "gold_tables": ["public.demand_letter", "public.booking", "public.customer", "public.unit"],
+    "domain_cluster": "collection",
+    "difficulty": "moderate",
+    "question_type": "multi-hop-join"
+  },
+  {
+    "id": "eval-016",
+    "question": "Which customers have made a payment via UPI?",
+    "gold_sql": "SELECT DISTINCT cu.first_name, cu.last_name FROM public.customer cu JOIN public.booking b ON b.customer_id = cu.customer_id JOIN public.receipt r ON r.booking_id = b.booking_id JOIN public.payment_mode pm ON r.payment_mode_id = pm.payment_mode_id WHERE pm.name = 'UPI';",
+    "gold_tables": ["public.customer", "public.booking", "public.receipt", "public.payment_mode"],
+    "domain_cluster": "collection",
+    "difficulty": "moderate",
+    "question_type": "filter-heavy"
+  },
+  {
+    "id": "eval-017",
+    "question": "Which customers booked a unit through a channel partner, and what is the channel partner's firm name?",
+    "gold_sql": "SELECT DISTINCT cu.first_name, cu.last_name, cp.firm_name FROM public.customer cu JOIN public.booking b ON b.customer_id = cu.customer_id JOIN public.channel_partner cp ON b.channel_partner_id = cp.channel_partner_id;",
+    "gold_tables": ["public.customer", "public.booking", "public.channel_partner"],
+    "domain_cluster": "commission",
+    "difficulty": "complex",
+    "question_type": "multi-hop-join"
+  },
+  {
+    "id": "eval-018",
+    "question": "Which bookings currently have an overdue milestone, along with the overdue amount and the customer's name?",
+    "gold_sql": "SELECT b.booking_id, cu.first_name, cu.last_name, m.milestone_name, m.due_amount FROM public.milestone m JOIN public.payment_plan pp ON m.payment_plan_id = pp.payment_plan_id JOIN public.booking b ON pp.booking_id = b.booking_id JOIN public.customer cu ON b.customer_id = cu.customer_id WHERE m.status = 'overdue' ORDER BY b.booking_id;",
+    "gold_tables": ["public.milestone", "public.payment_plan", "public.booking", "public.customer"],
+    "domain_cluster": "payment",
+    "difficulty": "complex",
+    "question_type": "multi-hop-join"
+  },
+  {
+    "id": "eval-019",
+    "question": "What is the total commission paid per channel partner, counting only commission payments with status paid?",
+    "gold_sql": "SELECT cp.firm_name, SUM(cpay.commission_amount) AS total_paid FROM public.commission_payment cpay JOIN public.channel_partner cp ON cpay.channel_partner_id = cp.channel_partner_id WHERE cpay.status = 'paid' GROUP BY cp.firm_name ORDER BY total_paid DESC NULLS LAST;",
+    "gold_tables": ["public.commission_payment", "public.channel_partner"],
+    "domain_cluster": "commission",
+    "difficulty": "complex",
+    "question_type": "aggregation"
+  },
+  {
+    "id": "eval-020",
+    "question": "List all cancelled bookings along with the refund amount and who approved the cancellation.",
+    "gold_sql": "SELECT b.booking_id, cu.first_name, cu.last_name, c.refund_amount, e.first_name AS approver_first_name, e.last_name AS approver_last_name FROM public.booking b JOIN public.customer cu ON b.customer_id = cu.customer_id JOIN public.cancellation c ON c.booking_id = b.booking_id LEFT JOIN public.employee e ON c.approved_by = e.employee_id WHERE b.status = 'cancelled';",
+    "gold_tables": ["public.booking", "public.customer", "public.cancellation", "public.employee"],
+    "domain_cluster": "booking",
+    "difficulty": "complex",
+    "question_type": "multi-hop-join"
+  }
+]
